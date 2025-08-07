@@ -1,0 +1,13 @@
+{% extends 'mailings/base.html' %}
+{% load my_tags %}
+{% block title %}<h4>Список сообщений</h4>{% endblock %}
+{% block content %}
+{% if user.is_authenticated %}
+<a href="{% url 'mailings:message_create' %}" class="btn btn-primary">Добавить сообщение</a>
+{% endif %}
+<div class="list-group">
+    {% for message in message_list %}
+    <a href="{% url 'mailings:message_detail' message.pk %}" class="list-group-item list-group-item-action">{{ message.subject }}</a>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends 'mailings/base.html' %}
+{% load my_tags %}
+{% block content %}
+<div class="col-6">
+    <div class="card mb-3">
+        {% if user.is_authenticated %}
+        <div class="card-body">
+            <h4 class="card-title">{{ recipient.full_name }}</h4>
+            <h5 class="card-title">{{ recipient.email }}</h5>
+            <p class="card-text">{{ recipient.comment }}</p>
+            <a href="{% url 'mailings:recipient_update' recipient.pk %}" class="btn btn-secondary">Редактировать</a>
+            <a href="{% url 'mailings:recipient_delete' recipient.pk %}" class="btn btn-danger">Удалить</a>
+            <a href="{% url 'mailings:recipient_list' %}" class="btn btn-primary">Назад</a>
+        </div>
+        {% else %}
+        <p>Для просмотра информации требуется авторизация</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

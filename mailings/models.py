@@ -1,0 +1,76 @@
+from django.db import models
+
+class Recipient(models.Model):
+    email = models.CharField(max_length=100, unique=True, verbose_name='Email')
+    full_name = models.CharField(max_length=100, verbose_name='Ф.И.О.')
+    comment = models.TextField(verbose_name='Комментарий', blank=True, null=True)
+
+    class Meta:
+        verbose_name = 'Получатель'
+        verbose_name_plural = 'Получатели'
+        ordering = ['full_name',]
+
+    def __str__(self):
+        return self.full_name
+
+
+class Message(models.Model):
+    subject = models.CharField(max_length=150, verbose_name='Тема письма')
+    message = models.TextField(verbose_name='Тело письма')
+
+    class Meta:
+        verbose_name = 'Сообщение'
+        verbose_name_plural = 'Сообщения'
+        ordering = ['subject', ]
+
+    def __str__(self):
+        return self.subject
+
+
+class Mailing(models.Model):
+    CREATED = 'created'
+    RUNNING = 'running'
+    COMPLETED = 'completed'
+
+    STATUS_CHOICES = [
+        (CREATED, 'Создана'),
+        (RUNNING, 'Запущена'),
+        (COMPLETED, 'Завершена'),
+    ]
+
+    sending_start = models.DateTimeField(verbose_name='Дата и время первой отправки', blank=True, null=True)
+    sending_end = models.DateTimeField(verbose_name='Дата и время окончания отправки', blank=True, null=True)
+    status = models.CharField(max_length=9, choices=STATUS_CHOICES, default=CREATED, verbose_name='Статус')
+    message = models.ForeignKey(Message, on_delete=models.CASCADE, verbose_name='Сообщение')
+    recipient_list = models.ManyToManyField(Recipient)
+
+    class Meta:
+        verbose_name = 'Рассылка'
+        verbose_name_plural = 'Рассылки'
+        ordering = ['sending_start', 'sending_end',]
+
+    def __str__(self):
+        return f'{self.sending_start} {self.message}'
+
+
+class MailingTry(models.Model):
+    SUCCESS = 'success'
+    FAIL = 'fail'
+
+    STATUS_CHOICES = [
+        (SUCCESS, 'Успешно'),
+        (FAIL, 'Не успешно'),
+    ]
+
+    date_time = models.DateTimeField(verbose_name='Дата и время попытки', auto_now=True)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, verbose_name='Статус попытки')
+    response = models.TextField(verbose_name='Ответ почтового сервера')
+    mailing = models.ForeignKey(Mailing, on_delete=models.CASCADE, verbose_name='Рассылка')
+
+    class Meta:
+        verbose_name = 'Попытка рассылки'
+        verbose_name_plural = 'Попытки рассылки'
+        ordering = ['date_time',]
+
+    def __str__(self):
+        return f'{self.date_time} {self.status}'
