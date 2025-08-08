@@ -7,7 +7,9 @@
 {% endif %}
 <div class="list-group">
     {% for recipient in recipient_list %}
+    {% if user == recipient.owner or perms.mailings.view_recipient %}
     <a href="{% url 'mailings:recipient_detail' recipient.pk %}" class="list-group-item list-group-item-action">{{ recipient.full_name }} {{ recipient.email }}</a>
+    {% endif %}
     {% endfor %}
 </div>
 {% endblock %}

@@ -10,8 +10,10 @@
             <p class="card-text">Окончание отправки: {{ mailing.sending_end }}</p>
             <p class="card-text">Статус: {{ mailing.status }}</p>
             <p class="card-text">Получатели: {{ mailing.recipient_list }}</p>
+            {% if user == mailing.owner %}
             <a href="{% url 'mailings:mailing_update' mailing.pk %}" class="btn btn-secondary">Редактировать</a>
             <a href="{% url 'mailings:mailing_delete' mailing.pk %}" class="btn btn-danger">Удалить</a>
+            {% endif %}
             <a href="{% url 'mailings:mailing_list' %}" class="btn btn-primary">Назад</a>
         </div>
         {% else %}

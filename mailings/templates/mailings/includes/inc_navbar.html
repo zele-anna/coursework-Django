@@ -9,6 +9,7 @@
         <li class="nav-item">
           <a class="nav-link" href="{% url 'mailings:home' %}">Главная</a>
         </li>
+        {% if user.is_authenticated %}
         <li class="nav-item">
           <a class="nav-link" href="{% url 'mailings:recipient_list' %}">Получатели рассылок</a>
         </li>
@@ -18,6 +19,12 @@
         <li class="nav-item">
           <a class="nav-link" href="{% url 'mailings:mailing_list' %}">Рассылки</a>
         </li>
+        {% endif %}
+        {% if perms.users.view_user %}
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'users:user_list' %}">Пользователи</a>
+        </li>
+        {% endif %}
         {% if user.is_authenticated %}
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -25,7 +32,7 @@
           </a>
           <ul class="dropdown-menu">
             <li>
-              <form method="post" action="#">
+              <form method="post" action="{% url 'users:logout' %}">
                 {% csrf_token %}
                 <button type="submit" class="dropdown-item">Выйти</button>
               </form>
@@ -38,8 +45,8 @@
             Вход/регистрация
           </a>
           <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="#">Вход</a></li>
-            <li><a class="dropdown-item" href="#">Регистрация</a></li>
+            <li><a class="dropdown-item" href="{% url 'users:login' %}">Вход</a></li>
+            <li><a class="dropdown-item" href="{% url 'users:register' %}">Регистрация</a></li>
           </ul>
         </li>
         {% endif %}

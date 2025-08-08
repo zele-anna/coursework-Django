@@ -1,0 +1,12 @@
+{% extends 'mailings/base.html' %}
+{% load my_tags %}
+{% block title %}<h4>Список пользователей</h4>{% endblock %}
+{% block content %}
+<div class="list-group">
+    {% for user in user_list %}
+    {% if perms.users.view_user %}
+    <a href="{% url 'users:user_detail' user.pk %}" class="list-group-item list-group-item-action">{{ user.email }}</a>
+    {% endif %}
+    {% endfor %}
+</div>
+{% endblock %}

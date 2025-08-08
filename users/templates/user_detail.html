@@ -1,0 +1,20 @@
+{% extends 'mailings/base.html' %}
+{% load my_tags %}
+{% block content %}
+<div class="col-6">
+    <div class="card mb-3">
+        {% if user.is_authenticated and perms.users.view_user %}
+        <div class="card-body">
+            <h4 class="card-title">{{ user.email }}</h4>
+            <h5 class="card-title">{{ user.name }}</h5>
+            {% if perms.users.can_block_user %}
+            <a href="{% url 'users:user_block' user.pk %}" class="btn btn-secondary">Блокировать</a>
+            {% endif %}
+            <a href="{% url 'users:user_list' %}" class="btn btn-primary">Назад</a>
+        </div>
+        {% else %}
+        <p>Для просмотра информации требуется авторизация и права менеджера</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

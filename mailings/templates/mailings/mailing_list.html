@@ -18,6 +18,7 @@
     </thead>
     <tbody>
     {% for mailing in mailing_list %}
+    {% if user == mailing.owner or perms.mailings.view_mailing %}
     <tr>
         <td>{{ mailing.pk }}</td>
         <td>{{ mailing.sending_start }}</td>
@@ -26,6 +27,7 @@
         <td>{{ mailing.message.subject }}</td>
         <td><a href="{% url 'mailings:mailing_detail' mailing.pk %}">Просмотр</a></td>
     </tr>
+    {% endif %}
     {% endfor %}
     </tbody>
 </table>

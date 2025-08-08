@@ -7,8 +7,10 @@
         <div class="card-body">
             <h5 class="card-title">{{ message.subject }}</h5>
             <p class="card-text">{{ message.message }}</p>
+            {% if user == message.owner %}
             <a href="{% url 'mailings:message_update' message.pk %}" class="btn btn-secondary">Редактировать</a>
             <a href="{% url 'mailings:message_delete' message.pk %}" class="btn btn-danger">Удалить</a>
+            {% endif %}
             <a href="{% url 'mailings:message_list' %}" class="btn btn-primary">Назад</a>
         </div>
         {% else %}

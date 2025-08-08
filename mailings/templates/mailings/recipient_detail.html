@@ -8,8 +8,10 @@
             <h4 class="card-title">{{ recipient.full_name }}</h4>
             <h5 class="card-title">{{ recipient.email }}</h5>
             <p class="card-text">{{ recipient.comment }}</p>
+            {% if user == recipient.owner %}
             <a href="{% url 'mailings:recipient_update' recipient.pk %}" class="btn btn-secondary">Редактировать</a>
             <a href="{% url 'mailings:recipient_delete' recipient.pk %}" class="btn btn-danger">Удалить</a>
+            {% endif %}
             <a href="{% url 'mailings:recipient_list' %}" class="btn btn-primary">Назад</a>
         </div>
         {% else %}
