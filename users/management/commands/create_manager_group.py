@@ -9,11 +9,13 @@ class Command(BaseCommand):
         view_message_permission = Permission.objects.get(codename='view_message')
         view_mailing_permission = Permission.objects.get(codename='view_mailing')
         view_user_permission = Permission.objects.get(codename='view_user')
+        view_mailingtry_permission = Permission.objects.get(codename='view_mailingtry')
         block_user_permission = Permission.objects.get(codename='can_block_user')
         manager_group.permissions.add(
             view_recipient_permission,
             view_message_permission,
             view_mailing_permission,
             view_user_permission,
+            view_mailingtry_permission,
             block_user_permission,
         )

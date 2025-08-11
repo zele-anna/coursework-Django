@@ -19,6 +19,9 @@
         <li class="nav-item">
           <a class="nav-link" href="{% url 'mailings:mailing_list' %}">Рассылки</a>
         </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'mailings:mailing_try_list' %}">Попытки рассылки</a>
+        </li>
         {% endif %}
         {% if perms.users.view_user %}
         <li class="nav-item">

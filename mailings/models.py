@@ -4,8 +4,8 @@ from users.models import User
 
 
 class Recipient(models.Model):
-    email = models.CharField(max_length=100, unique=True, verbose_name="Email")
-    full_name = models.CharField(max_length=100, verbose_name="Ф.И.О.")
+    email = models.EmailField(unique=True, verbose_name="Email")
+    full_name = models.CharField(max_length=255, verbose_name="Ф.И.О.")
     comment = models.TextField(verbose_name="Комментарий", blank=True, null=True)
     owner = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True)
 
@@ -37,9 +37,9 @@ class Message(models.Model):
 
 
 class Mailing(models.Model):
-    CREATED = "created"
-    RUNNING = "running"
-    COMPLETED = "completed"
+    CREATED = "Создана"
+    RUNNING = "Запущена"
+    COMPLETED = "Завершена"
 
     STATUS_CHOICES = [
         (CREATED, "Создана"),
@@ -75,19 +75,19 @@ class Mailing(models.Model):
 
 
 class MailingTry(models.Model):
-    SUCCESS = "success"
-    FAIL = "fail"
+    SUCCESS = "Успешно"
+    FAILURE = "Не успешно"
 
     STATUS_CHOICES = [
         (SUCCESS, "Успешно"),
-        (FAIL, "Не успешно"),
+        (FAILURE, "Не успешно"),
     ]
 
-    date_time = models.DateTimeField(verbose_name="Дата и время попытки", auto_now=True)
+    date_time = models.DateTimeField(verbose_name="Дата и время попытки", auto_now_add=True)
     status = models.CharField(
         max_length=10, choices=STATUS_CHOICES, verbose_name="Статус попытки"
     )
-    response = models.TextField(verbose_name="Ответ почтового сервера")
+    response = models.TextField(verbose_name="Ответ почтового сервера", blank=True, null=True)
     mailing = models.ForeignKey(
         Mailing, on_delete=models.CASCADE, verbose_name="Рассылка"
     )

@@ -1,8 +1,8 @@
 import secrets
 
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.contrib.auth.views import PasswordResetView, PasswordResetConfirmView
 from django.core.mail import send_mail
-from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.views.generic import ListView, UpdateView, DetailView
 from django.views.generic.edit import CreateView
@@ -66,3 +66,14 @@ class UserUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
     def has_permission(self):
         user = self.request.user
         return user.has_perm('users.can_block_user')
+
+
+class UserPasswordResetView(PasswordResetView):
+    template_name = 'custom_registration/password_reset_form.html'
+    email_template_name = 'custom_registration/password_reset_email.html'
+    success_url = reverse_lazy("users:password_reset_done")
+
+
+class UserPasswordResetConfirmView(PasswordResetConfirmView):
+    template_name = "custom_registration/password_reset_confirm.html"
+    success_url = reverse_lazy("users:password_reset_complete")

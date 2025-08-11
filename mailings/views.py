@@ -1,8 +1,13 @@
+import datetime
+
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.core.mail import send_mail
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
-from django.views.generic import ListView, DetailView, TemplateView
+from django.views.generic import ListView, DetailView, TemplateView, View
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 
+from config.settings import EMAIL_HOST_USER
 from .forms import RecipientForm, MessageForm, MailingForm
 from .models import Recipient, Message, Mailing, MailingTry
 
@@ -144,3 +149,54 @@ class MailingDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView)
         user = self.request.user
         mailing = self.get_object()
         return user == mailing.owner
+
+
+class MailingTryListView(LoginRequiredMixin, ListView):
+    model = MailingTry
+
+
+class MailingTryDetailView(LoginRequiredMixin, PermissionRequiredMixin, DetailView):
+    model = MailingTry
+
+    def has_permission(self):
+        user = self.request.user
+        mailing_try = self.get_object()
+        return user == mailing_try.mailing.owner or user.has_perm('users.view_user')
+
+
+class MailingTryView(View):
+    def post(self, request, pk):
+        mailing = get_object_or_404(Mailing, pk=pk)
+        if not mailing.sending_start:
+            mailing.sending_start = datetime.datetime.now()
+        mailing.sending_end = datetime.datetime.now()
+        mailing.status = "Запущена"
+        mailing.save()
+
+        for recipient in mailing.recipient_list.all():
+            try:
+                send_mail(
+                    mailing.message.subject,
+                    mailing.message.message,
+                    EMAIL_HOST_USER,
+                    [recipient.email]
+                )
+                MailingTry.objects.create(
+                    date_time=datetime.datetime.now(),
+                    status='Успешно',
+                    response=f'Успешная отправка на адрес: {recipient.email}',
+                    mailing=mailing,
+                )
+            except Exception as e:
+                MailingTry.objects.create(
+                    date_time=datetime.datetime.now(),
+                    status='Не успешно',
+                    response=f'Ошибка при отправке на адрес: {recipient.email}, ошибка: {e}',
+                    mailing=mailing,
+                )
+            finally:
+                mailing.status = 'Завершена'
+                mailing.save()
+
+
+        return redirect("mailings:mailing_list")

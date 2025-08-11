@@ -13,7 +13,9 @@
         <th scope="col">Окончание отправки</th>
         <th scope="col">Статус</th>
         <th scope="col">Сообщение</th>
-        <th scope="col">Ссылка</th>
+        <th scope="col">Количество получателей</th>
+        <th scope="col">Детали</th>
+        <th scope="col"></th>
     </tr>
     </thead>
     <tbody>
@@ -25,7 +27,16 @@
         <td>{{ mailing.sending_end }}</td>
         <td>{{ mailing.status }}</td>
         <td>{{ mailing.message.subject }}</td>
+        <td>{{ mailing.recipient_list.count }}</td>
         <td><a href="{% url 'mailings:mailing_detail' mailing.pk %}">Просмотр</a></td>
+        {% if user == mailing.owner %}
+        <td>
+            <form method="post" action="{% url 'mailings:run_mailing' mailing.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary">Запуск</button>
+              </form>
+        </td>
+        {% endif %}
     </tr>
     {% endif %}
     {% endfor %}

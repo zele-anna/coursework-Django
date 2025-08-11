@@ -1,0 +1,20 @@
+{% extends 'mailings/base.html' %}
+{% load my_tags %}
+{% block content %}
+<div class="col-6">
+    <div class="card mb-3">
+        {% if user.is_authenticated %}
+        <div class="card-body">
+            <h5 class="card-title">Тема рассылки: {{ mailingtry.message.subject }}</h5>
+            <p class="card-text">Дата и время попытки: {{ mailingtry.date_time }}</p>
+            <p class="card-text">Статус: {{ mailingtry.status }}</p>
+            <p class="card-text">Ответ почтового сервера: {{ mailingtry.response }}</p>
+            <p class="card-text">Клиент: {{ mailingtry.mailing.owner.email }}</p>
+            <a href="{% url 'mailings:mailing_try_list' %}" class="btn btn-primary">Назад</a>
+        </div>
+        {% else %}
+        <p>Для просмотра информации требуется авторизация</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
