@@ -1,7 +1,7 @@
 from django.forms import ModelForm
 from django.forms.fields import BooleanField
 
-from mailings.models import Recipient, Message, Mailing
+from mailings.models import Mailing, Message, Recipient
 
 
 class StyleFormMixin:
@@ -29,4 +29,11 @@ class MessageForm(StyleFormMixin, ModelForm):
 class MailingForm(StyleFormMixin, ModelForm):
     class Meta:
         model = Mailing
-        exclude = ["sending_start", "sending_end", "status", 'owner']
+        fields = ["message", 'recipient_list']
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        if user:
+            self.fields['recipient_list'].queryset = Recipient.objects.filter(owner=user)
+            self.fields['message'].queryset = Message.objects.filter(owner=user)

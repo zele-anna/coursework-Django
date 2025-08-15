@@ -1,25 +1,35 @@
-import datetime
-
+from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
-from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
-from django.views.generic import ListView, DetailView, TemplateView, View
-from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+from django.views.generic import DetailView, ListView, TemplateView, View
+from django.views.generic.edit import CreateView, DeleteView, UpdateView
 
-from config.settings import EMAIL_HOST_USER
-from .forms import RecipientForm, MessageForm, MailingForm
-from .models import Recipient, Message, Mailing, MailingTry
+from .forms import MailingForm, MessageForm, RecipientForm
+from .models import Mailing, MailingTry, Message, Recipient
+from .services import run_mailing
 
 
 class HomeTemplateView(TemplateView):
     template_name = "mailings/home.html"
+
+    def get_context_data(self, **kwargs):
+        context_data = super().get_context_data(**kwargs)
+        context_data.update({
+            'mailings_count': Mailing.objects.filter(owner=self.request.user).count(),
+            'mailings_in_process': Mailing.objects.filter(owner=self.request.user, status='Запущена').count(),
+            'recipient_count': Recipient.objects.filter(owner=self.request.user).count(),
+        })
+        return context_data
 
 
 class RecipientListView(LoginRequiredMixin, ListView):
     model = Recipient
 
 
+@method_decorator(cache_page(60 * 5), name='dispatch')
 class RecipientDetailView(LoginRequiredMixin, DetailView):
     model = Recipient
 
@@ -31,6 +41,7 @@ class RecipientCreateView(LoginRequiredMixin, CreateView):
     success_url = reverse_lazy("mailings:recipient_list")
 
     def form_valid(self, form):
+        '''Метод для присвоения пользователя в качестве владельца объекта получателя.'''
         recipient = form.save()
         user = self.request.user
         recipient.owner = user
@@ -65,6 +76,7 @@ class MessageListView(LoginRequiredMixin, ListView):
     model = Message
 
 
+@method_decorator(cache_page(60 * 5), name='dispatch')
 class MessageDetailView(LoginRequiredMixin, DetailView):
     model = Message
 
@@ -76,6 +88,7 @@ class MessageCreateView(LoginRequiredMixin, CreateView):
     success_url = reverse_lazy("mailings:message_list")
 
     def form_valid(self, form):
+        '''Метод для присвоения пользователя в качестве владельца сообщения.'''
         message = form.save()
         user = self.request.user
         message.owner = user
@@ -110,6 +123,7 @@ class MailingListView(LoginRequiredMixin, ListView):
     model = Mailing
 
 
+@method_decorator(cache_page(60 * 5), name='dispatch')
 class MailingDetailView(LoginRequiredMixin, DetailView):
     model = Mailing
 
@@ -120,7 +134,14 @@ class MailingCreateView(LoginRequiredMixin, CreateView):
     template_name = "mailings/mailing_form.html"
     success_url = reverse_lazy("mailings:mailing_list")
 
+    def get_form_kwargs(self):
+        '''Метод для фильтрации списка получателей и сообщений в форме создания рассылки.'''
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
     def form_valid(self, form):
+        '''Метод для присвоения пользователя в качестве владельца рассылки.'''
         mailing = form.save()
         user = self.request.user
         mailing.owner = user
@@ -139,6 +160,12 @@ class MailingUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView)
         mailing = self.get_object()
         return user == mailing.owner
 
+    def get_form_kwargs(self):
+        '''Метод для фильтрации списка получателей и сообщений в форме обновления рассылки.'''
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
 
 class MailingDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     model = Mailing
@@ -155,6 +182,7 @@ class MailingTryListView(LoginRequiredMixin, ListView):
     model = MailingTry
 
 
+@method_decorator(cache_page(60 * 30), name='dispatch')
 class MailingTryDetailView(LoginRequiredMixin, PermissionRequiredMixin, DetailView):
     model = MailingTry
 
@@ -167,36 +195,21 @@ class MailingTryDetailView(LoginRequiredMixin, PermissionRequiredMixin, DetailVi
 class MailingTryView(View):
     def post(self, request, pk):
         mailing = get_object_or_404(Mailing, pk=pk)
-        if not mailing.sending_start:
-            mailing.sending_start = datetime.datetime.now()
-        mailing.sending_end = datetime.datetime.now()
-        mailing.status = "Запущена"
+
+        if mailing.status == 'Завершена':
+            messages.warning(request, "Рассылка уже завершена и не может быть запущена.")
+            return redirect("mailings:mailing_list")
+
+        run_mailing(mailing)
+
+        messages.warning(request, f"Рассылка ID {mailing.pk} запущена.")
+        return redirect("mailings:mailing_list")
+
+
+class MailingStopView(View):
+    def post(self, request, pk):
+        mailing = get_object_or_404(Mailing, pk=pk)
+        mailing.status = "Завершена"
         mailing.save()
-
-        for recipient in mailing.recipient_list.all():
-            try:
-                send_mail(
-                    mailing.message.subject,
-                    mailing.message.message,
-                    EMAIL_HOST_USER,
-                    [recipient.email]
-                )
-                MailingTry.objects.create(
-                    date_time=datetime.datetime.now(),
-                    status='Успешно',
-                    response=f'Успешная отправка на адрес: {recipient.email}',
-                    mailing=mailing,
-                )
-            except Exception as e:
-                MailingTry.objects.create(
-                    date_time=datetime.datetime.now(),
-                    status='Не успешно',
-                    response=f'Ошибка при отправке на адрес: {recipient.email}, ошибка: {e}',
-                    mailing=mailing,
-                )
-            finally:
-                mailing.status = 'Завершена'
-                mailing.save()
-
 
         return redirect("mailings:mailing_list")

@@ -1,14 +1,18 @@
 import secrets
 
+from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
-from django.contrib.auth.views import PasswordResetView, PasswordResetConfirmView
+from django.contrib.auth.views import PasswordResetConfirmView, PasswordResetView
 from django.core.mail import send_mail
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
-from django.views.generic import ListView, UpdateView, DetailView
+from django.views import View
+from django.views.generic import DetailView, ListView, UpdateView
 from django.views.generic.edit import CreateView
 
 from config.settings import EMAIL_HOST_USER
-from .forms import UserRegisterForm
+
+from .forms import UserForm, UserRegisterForm
 from .models import User
 
 
@@ -48,20 +52,30 @@ class UserListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
         return user.has_perm('users.view_user')
 
 
-class UserDetailView(LoginRequiredMixin, PermissionRequiredMixin, DetailView):
+class UserProfileDetailView(LoginRequiredMixin, DetailView):
     model = User
-    template_name = 'user_detail.html'
-
-    def has_permission(self):
-        user = self.request.user
-        return user.has_perm('users.view_user')
+    template_name = 'user_profile.html'
 
 
-class UserUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
+class UserProfileUpdateView(LoginRequiredMixin, UpdateView):
     model = User
-    template_name = 'user_block_confirm.html'
-    fields = ['is_active',]
-    success_url = reverse_lazy('users:user_list')
+    form_class = UserForm
+    template_name = 'user_profile_form.html'
+    success_url = reverse_lazy('mailings:home')
+
+
+class UserBlockView(LoginRequiredMixin, PermissionRequiredMixin, View):
+    def post(self, request, pk):
+        user = get_object_or_404(User, pk=pk)
+        if user.is_active:
+            user.is_active = False
+            messages.warning(request, f"Пользователь {user.email} заблокирован.")
+        else:
+            user.is_active = True
+            messages.warning(request, f"Пользователь {user.email} разблокирован.")
+        user.save()
+
+        return redirect("users:user_list")
 
     def has_permission(self):
         user = self.request.user

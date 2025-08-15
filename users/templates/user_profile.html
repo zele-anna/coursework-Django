@@ -2,12 +2,13 @@
 {% load my_tags %}
 {% block content %}
 <div class="col-6">
-    <div class="card mb-3">
-        {% if user.avatar %}
+    {% if user.avatar %}
         <img src="{{ user.avatar | media_filter }}" class="img-thumbnail" alt="Изображение отсутствует">
         {% else %}
         <p>Изображение отсутствует</p>
         {% endif %}
+    <div class="card mb-3">
+
         {% if user.is_authenticated and perms.users.view_user %}
         <div class="card-body">
             <h4 class="card-title">Логин: {{ user.email }}</h4>
@@ -15,9 +16,9 @@
             <p class="card-text">Телефон: {{ user.phone_number }}</p>
             <p class="card-text">Страна: {{ user.country }}</p>
             {% if perms.users.can_block_user %}
-            <a href="{% url 'users:user_block' user.pk %}" class="btn btn-secondary">Блокировать</a>
+            <a href="{% url 'users:user_profile_update' user.pk %}" class="btn btn-secondary">Редактировать</a>
             {% endif %}
-            <a href="{% url 'users:user_list' %}" class="btn btn-primary">Назад</a>
+            <a href="{% url 'mailings:home' %}" class="btn btn-primary">Назад</a>
         </div>
         {% else %}
         <p>Для просмотра информации требуется авторизация и права менеджера</p>

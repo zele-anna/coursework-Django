@@ -21,7 +21,7 @@
         <td>{{ mailing_try.date_time }}</td>
         <td>{{ mailing_try.mailing.message.subject }}</td>
         <td>{{ mailing_try.status }}</td>
-        <td>{{ mailing_try.response }}</td>
+        <td>{{ mailing_try.response|truncatechars:100 }}</td>
         <td><a href="{% url 'mailings:mailing_try_detail' mailing_try.pk %}">Просмотр</a></td>
     </tr>
     {% endif %}

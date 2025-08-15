@@ -17,7 +17,7 @@ class Recipient(models.Model):
         ]
 
     def __str__(self):
-        return self.full_name
+        return self.email
 
 
 class Message(models.Model):
@@ -68,6 +68,9 @@ class Mailing(models.Model):
         ordering = [
             "sending_start",
             "sending_end",
+        ]
+        permissions = [
+            ('can_stop_mailing', 'Can stop mailing'),
         ]
 
     def __str__(self):

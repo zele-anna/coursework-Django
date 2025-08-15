@@ -1,0 +1,15 @@
+{% extends 'mailings/base.html' %}
+{% load my_tags %}
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">Мой профиль</h1>
+    <p>Email: {{ user.email }}</p>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Сохранить</button>
+        <a href="{% url 'mailings:home' %}" class="btn btn-secondary">Отмена</a>
+    </form>
+</div>
+{% endblock %}

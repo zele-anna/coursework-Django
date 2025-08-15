@@ -5,11 +5,29 @@
 {% if user.is_authenticated %}
 <a href="{% url 'mailings:recipient_create' %}" class="btn btn-primary">Добавить получателя</a>
 {% endif %}
-<div class="list-group">
+<table class="table caption-top">
+    <thead>
+    <tr>
+        <th scope="col">ID</th>
+        <th scope="col">Имя</th>
+        <th scope="col">Email</th>
+        <th scope="col">Комментарий</th>
+        <th scope="col">Детали</th>
+        <th scope="col"></th>
+    </tr>
+    </thead>
+    <tbody>
     {% for recipient in recipient_list %}
     {% if user == recipient.owner or perms.mailings.view_recipient %}
-    <a href="{% url 'mailings:recipient_detail' recipient.pk %}" class="list-group-item list-group-item-action">{{ recipient.full_name }} {{ recipient.email }}</a>
+    <tr>
+        <td>{{ recipient.id }}</td>
+        <td>{{ recipient.full_name }}</td>
+        <td>{{ recipient.email }}</td>
+        <td>{{ recipient.comment }}</td>
+        <td><a href="{% url 'mailings:recipient_detail' recipient.pk %}">Просмотр</a></td>
+    </tr>
     {% endif %}
     {% endfor %}
-</div>
+    </tbody>
+</table>
 {% endblock %}

@@ -2,11 +2,49 @@
 {% load my_tags %}
 {% block title %}<h4>Список пользователей</h4>{% endblock %}
 {% block content %}
-<div class="list-group">
-    {% for user in user_list %}
+{% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+<table class="table caption-top">
+    <thead>
+    <tr>
+        <th scope="col">ID</th>
+        <th scope="col">Email</th>
+        <th scope="col">ФИО</th>
+        <th scope="col">Телефон</th>
+        <th scope="col">Страна</th>
+        <th scope="col">Детали</th>
+        <th scope="col"></th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for client in user_list %}
     {% if perms.users.view_user %}
-    <a href="{% url 'users:user_detail' user.pk %}" class="list-group-item list-group-item-action">{{ user.email }}</a>
+    <tr>
+        <td>{{ client.id }}</td>
+        <td>{{ client.email }}</td>
+        <td>{{ client.first_name }} {{ client.last_name }}</td>
+        <td>{{ client.phone_number }}</td>
+        <td>{{ client.country }}</td>
+        {% if perms.users.can_block_user %}
+        <td>
+            <form method="post" action="{% url 'users:user_block' client.pk %}">
+                {% csrf_token %}
+                {% if client.is_active == True %}
+                <button type="submit" class="btn btn-primary">Блокировать</button>
+                {% else %}
+                <button type="submit" class="btn btn-primary">Разблокировать</button>
+                {% endif %}
+            </form>
+        </td>
+        {% endif %}
+    </tr>
     {% endif %}
     {% endfor %}
-</div>
+    </tbody>
+</table>
 {% endblock %}
