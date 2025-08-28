@@ -1,0 +1,31 @@
+{% extends 'mailings/base.html' %}
+{% load my_tags %}
+{% block title %}<h4>Список попыток отправки</h4>{% endblock %}
+{% block content %}
+<table class="table caption-top">
+    <thead>
+    <tr>
+        <th scope="col">ID</th>
+        <th scope="col">Дата и время попытки</th>
+        <th scope="col">Тема рассылки</th>
+        <th scope="col">Статус</th>
+        <th scope="col">Ответ почтового сервера</th>
+        <th scope="col">Ссылка</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for mailing_try in mailingtry_list %}
+    {% if user == mailing_try.mailing.owner or perms.mailings.view_mailingtry %}
+    <tr>
+        <td>{{ mailing_try.pk }}</td>
+        <td>{{ mailing_try.date_time }}</td>
+        <td>{{ mailing_try.mailing.message.subject }}</td>
+        <td>{{ mailing_try.status }}</td>
+        <td>{{ mailing_try.response|truncatechars:100 }}</td>
+        <td><a href="{% url 'mailings:mailing_try_detail' mailing_try.pk %}">Просмотр</a></td>
+    </tr>
+    {% endif %}
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends 'mailings/base.html' %}
+{% load my_tags %}
+{% block title %}<h4>Список сообщений</h4>{% endblock %}
+{% block content %}
+{% if user.is_authenticated %}
+<a href="{% url 'mailings:message_create' %}" class="btn btn-primary">Добавить сообщение</a>
+{% endif %}
+<table class="table caption-top">
+    <thead>
+    <tr>
+        <th scope="col">ID</th>
+        <th scope="col">Заголовок</th>
+        <th scope="col">Текст</th>
+        <th scope="col">Детали</th>
+        <th scope="col"></th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for message in message_list %}
+    {% if user == message.owner or perms.mailings.view_message %}
+    <tr>
+        <td>{{ message.id }}</td>
+        <td>{{ message.subject }}</td>
+        <td>{{ message.message|truncatechars:100 }}</td>
+        <td><a href="{% url 'mailings:message_detail' message.pk %}">Просмотр</a></td>
+    </tr>
+    {% endif %}
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

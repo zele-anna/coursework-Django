@@ -1,0 +1,58 @@
+{% extends 'mailings/base.html' %}
+{% load my_tags %}
+{% block title %}<h4>Список сообщений</h4>{% endblock %}
+{% block content %}
+{% if user.is_authenticated %}
+<a href="{% url 'mailings:mailing_create' %}" class="btn btn-primary">Добавить рассылку</a>
+{% endif %}
+{% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+<table class="table caption-top">
+    <thead>
+    <tr>
+        <th scope="col">ID</th>
+        <th scope="col">Первая отправка</th>
+        <th scope="col">Окончание отправки</th>
+        <th scope="col">Статус</th>
+        <th scope="col">Сообщение</th>
+        <th scope="col">Количество получателей</th>
+        <th scope="col">Детали</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for mailing in mailing_list %}
+    {% if user == mailing.owner or perms.mailings.view_mailing %}
+    <tr>
+        <td>{{ mailing.pk }}</td>
+        <td>{{ mailing.sending_start|default:"-" }}</td>
+        <td>{{ mailing.sending_end|default:"-" }}</td>
+        <td>{{ mailing.status }}</td>
+        <td>{{ mailing.message.subject }}</td>
+        <td>{{ mailing.recipient_list.count }}</td>
+        <td><a href="{% url 'mailings:mailing_detail' mailing.pk %}">Просмотр</a></td>
+        {% if user == mailing.owner %}
+        <td>
+            <form method="post" action="{% url 'mailings:run_mailing' mailing.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary">Запуск</button>
+              </form>
+        </td>
+        {% elif perms.mailings.can_stop_mailing and mailing.status != 'Завершена'%}
+        <td>
+            <form method="post" action="{% url 'mailings:stop_mailing' mailing.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary">Завершить</button>
+              </form>
+        </td>
+        {% endif %}
+    </tr>
+    {% endif %}
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

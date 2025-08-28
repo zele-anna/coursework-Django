@@ -7,8 +7,23 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.13"
+django = "^5.2.5"
+python-dotenv = "^1.1.1"
+psycopg2-binary = "^2.9.10"
+black = "^25.1.0"
+flake8 = "^7.3.0"
+pillow = "^11.3.0"
+redis = "^6.4.0"
+isort = "^6.0.1"
 
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 119
+exclude = '.git'
+
+[tool.isort]
+line_length = 119

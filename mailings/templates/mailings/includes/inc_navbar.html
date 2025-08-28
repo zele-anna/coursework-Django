@@ -1,0 +1,60 @@
+<nav class="navbar navbar-expand-lg bg-body-tertiary">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="#">Mailing Service</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNavDropdown">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'mailings:home' %}">Главная</a>
+        </li>
+        {% if user.is_authenticated %}
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'mailings:recipient_list' %}">Получатели рассылок</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'mailings:message_list' %}">Сообщения</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'mailings:mailing_list' %}">Рассылки</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'mailings:mailing_try_list' %}">Попытки рассылки</a>
+        </li>
+        {% endif %}
+        {% if perms.users.view_user %}
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'users:user_list' %}">Пользователи</a>
+        </li>
+        {% endif %}
+        {% if user.is_authenticated %}
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            {{ user.email }}
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="{% url 'users:user_profile' user.pk %}">Профиль</a></li>
+            <li>
+              <form method="post" action="{% url 'users:logout' %}">
+                {% csrf_token %}
+                <button type="submit" class="dropdown-item">Выйти</button>
+              </form>
+            </li>
+          </ul>
+        </li>
+        {% else %}
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Вход/регистрация
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="{% url 'users:login' %}">Вход</a></li>
+            <li><a class="dropdown-item" href="{% url 'users:register' %}">Регистрация</a></li>
+          </ul>
+        </li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>
