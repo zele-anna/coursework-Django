@@ -142,6 +142,7 @@ AUTH_USER_MODEL = "users.User"
 
 LOGIN_REDIRECT_URL = "mailings:home"
 LOGOUT_REDIRECT_URL = "mailings:home"
+LOGIN_URL = "users:login"
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = os.getenv("EMAIL_HOST")

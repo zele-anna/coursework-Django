@@ -12,7 +12,7 @@ from .models import Mailing, MailingTry, Message, Recipient
 from .services import run_mailing
 
 
-class HomeTemplateView(TemplateView):
+class HomeTemplateView(LoginRequiredMixin, TemplateView):
     template_name = "mailings/home.html"
 
     def get_context_data(self, **kwargs):

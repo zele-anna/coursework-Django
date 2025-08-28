@@ -46,10 +46,10 @@ class RegisterView(CreateView):
 class UserListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
     model = User
     template_name = 'user_list.html'
+    permission_required = 'users.view_user'
 
-    def has_permission(self):
-        user = self.request.user
-        return user.has_perm('users.view_user')
+    def get_queryset(self):
+        return User.objects.filter(is_superuser=False)
 
 
 class UserProfileDetailView(LoginRequiredMixin, DetailView):
@@ -65,6 +65,8 @@ class UserProfileUpdateView(LoginRequiredMixin, UpdateView):
 
 
 class UserBlockView(LoginRequiredMixin, PermissionRequiredMixin, View):
+    permission_required = 'users.can_block_user'
+
     def post(self, request, pk):
         user = get_object_or_404(User, pk=pk)
         if user.is_active:
@@ -76,10 +78,6 @@ class UserBlockView(LoginRequiredMixin, PermissionRequiredMixin, View):
         user.save()
 
         return redirect("users:user_list")
-
-    def has_permission(self):
-        user = self.request.user
-        return user.has_perm('users.can_block_user')
 
 
 class UserPasswordResetView(PasswordResetView):
